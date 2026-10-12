@@ -5,8 +5,6 @@
 
     //===== paso 4, ancho y alto de cada cuadrado de la cuadrícula.
     const TAMANIO_CELDA = 25;
-
-
     
 
     // Primera pintura del juego al cargar la página
@@ -72,4 +70,30 @@
     }
 
 
+
+// ===== parte 2 PASO 1: Función para pintar una parte (cuadrado) =====
+function pintarParte(lineaX, lineaY) {
+  // Calcular la posición real en píxeles dentro del canvas
+  let posX = lineaX * TAMANIO_CELDA;
+  let posY = lineaY * TAMANIO_CELDA;
+
+  // Configurar color de relleno (verde para la serpiente)
+  ctx.fillStyle = "#22c55e"; 
+
+  // Dibujar el cuadrado
+  ctx.fillRect(posX, posY, TAMANIO_CELDA, TAMANIO_CELDA);
+
+  // Opcional: Agregar borde para que se vea mejor
+  ctx.strokeStyle = "#166534"; // Verde oscuro
+  //ctx.lineWidth = 1;
+  ctx.strokeRect(posX, posY, TAMANIO_CELDA, TAMANIO_CELDA);
+}
+
+
+// prueba, pintar un cuadrado en la posición (5, 1)
+pintarParte(5, 5);
+pintarParte(10,2);
+
+pintarParte(3,23);
+pintarParte(0,10);
 
