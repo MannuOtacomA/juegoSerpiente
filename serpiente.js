@@ -13,13 +13,16 @@
     let comida = {x: 0, y: 0};
     let puntaje = 0;
 
+    //Variable para velocidad
+    let velocidad = 300; 
+     // Variable cpara estado del juego
+    let juegoTerminado = false; 
+
     //=====cuerpo de serpiente
     const serpiente = [
-      {x: 11, y: 11},   // Cabeza
-      {x: 11, y: 10},   // Segmento 2
-      {x: 10, y: 10},   // Segmento 3 (cola)
-      {x: 9, y: 10} ,  // Segmento 4 (cola)
-      {x: 8, y: 10}   // Segmento 4 (cola)
+      {x: 10, y: 10},
+      {x: 9, y: 10},
+      {x: 8, y: 10}
     ];
     
 
@@ -171,6 +174,23 @@ function atrapaComida() {
 }
 
 
+// Evitar que retroceda sobre sí misma
+function cambiarDireccion(direccion) {
+  if (juegoTerminado) return; // No cambiar dirección si el juego terminó
+
+  if (direccion === "derecha" && direccionActual === "izquierda") return;
+  if (direccion === "izquierda" && direccionActual === "derecha") return;
+  if (direccion === "arriba" && direccionActual === "abajo") return;
+  if (direccion === "abajo" && direccionActual === "arriba") return;
+
+  if (direccion === "derecha") direccionActual = "derecha";
+  else if (direccion === "izquierda") direccionActual = "izquierda";
+  else if (direccion === "arriba") direccionActual = "arriba";
+  else if (direccion === "abajo") direccionActual = "abajo";
+  else if (direccion === "pausar") pausarJuego();
+}
+
+
 // =====3era PARTE 1: Función moverDerecha() =====
 function moverDerecha() {
   // Obtener la posición de la cabeza actual (primer elemento)
@@ -191,26 +211,6 @@ function moverDerecha() {
   
   // Redibujar la serpiente en su nueva posicion
   pintarSerpiente();
-}
-
-
-// =====3era PARTE 2: Función cambiarDireccion =====
-function cambiarDireccion(direccion) {
-  // Solo actualizar la dirección actual (ya no mueve directamente)
-  if (direccion === "derecha") {
-    direccionActual = "derecha";
-  } else if (direccion === "izquierda") {
-    direccionActual = "izquierda";
-  } else if (direccion === "arriba") {
-    direccionActual = "arriba";
-  } else if (direccion === "abajo") {
-    direccionActual = "abajo";
-  } else if (direccion === "pausar") {
-    pausarJuego();
-  }
-
-  // El movimiento lo hace moverSerpiente() automatico
-  //pintarSerpiente();
 }
 
 
@@ -252,9 +252,10 @@ function moverAbajo() {
 function iniciarJuego() {
   console.log(" Juego iniciado - La serpiente se move automáticamente");
   
-  // guarda el ejecutar moverSerpiente() cada 1 seg
-  intervaloSerpiente = setInterval(moverSerpiente, 1000);
+  // guarda el ejecutar moverSerpiente() cada 1 seg velocidad =1000
+  intervaloSerpiente = setInterval(moverSerpiente, velocidad);
 }
+
 
 // =====3era PARTE 4: Función pausarJuego() =====
 function pausarJuego() {
@@ -278,14 +279,32 @@ function moverSerpiente() {
   else if (direccionActual === "arriba") nuevaCabeza.y--;
   else if (direccionActual === "abajo") nuevaCabeza.y++;
 
-  // Agregar la nueva cabeza al inicio del arreglo
+//Validar si toca los bordes (GAME OVER)
+  let maxCeldasX = canvas.width / TAMANIO_CELDA;
+  let maxCeldasY = canvas.height / TAMANIO_CELDA;
+
+  if (nuevaCabeza.x < 0 || nuevaCabeza.x >= maxCeldasX || 
+      nuevaCabeza.y < 0 || nuevaCabeza.y >= maxCeldasY) {
+    gameOver();
+    return;
+  }
+
+  // Agregar la nueva cabeza 
   serpiente.unshift(nuevaCabeza);
 
-  //Verificar si comió la comida
+  //Verificar si comió 
   if (atrapaComida()) {
     // Sumar un punto al marcador
     puntaje += 1;
     mostrarTexto("txtPuntaje", puntaje);
+
+    // Aumentar velocidad cada 5 puntos
+    if (puntaje % 5 === 0 && velocidad > 100) {
+      velocidad -= 50; // Hace el juego más rápido
+      clearInterval(intervaloSerpiente);
+      intervaloSerpiente = setInterval(moverSerpiente, velocidad);
+      console.log("¡Velocidad aumentada! Nueva velocidad: " + velocidad + "ms");
+    }
 
     // Hacer crecer la serpiente (Agregar un nuevo cuadrado al final)
     let cola = serpiente[serpiente.length - 1];
@@ -311,6 +330,42 @@ function moverSerpiente() {
   pintarSerpiente();
 }
 
+
+// Función para manejar el Game Over
+function gameOver() {
+  juegoTerminado = true;
+  clearInterval(intervaloSerpiente);
+  mostrarTexto("estado", "GAME OVER");
+  alert("¡GAME OVER! La serpiente chocó. Puntaje final: " + puntaje);
+}
+
+//botón "Reiniciar juego"
+function reiniciarJuego() {
+  // Detener el intervalo actual
+  clearInterval(intervaloSerpiente);
+  
+  // Reiniciar variables a su estado inicial
+  puntaje = 0;
+  velocidad = 300; // Reiniciar velocidad
+  direccionActual = "derecha";
+  juegoTerminado = false;
+  
+  //Reiniciar la serpiente a su posición inicial
+  serpiente.length = 0; // Vaciar el arreglo de forma segura
+  serpiente.push({x: 10, y: 10});
+  serpiente.push({x: 9, y: 10});
+  serpiente.push({x: 8, y: 10});
+  
+  // 4. Actualizar la interfaz
+  mostrarTexto("puntaje", puntaje);
+  mostrarTexto("estado", "Listo");
+  
+  // 5. Redibujar todo y generar nueva comida
+  pintarComida();
+  dibujarTodo();
+  
+  console.log("Juego reiniciado correctamente");
+}
 
 
 
